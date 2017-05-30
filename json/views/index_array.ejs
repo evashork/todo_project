@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Todo LIST</title>
+	<style>
+		.container{width:320px; margin:0 auto}
+		.delBtn{float: right;}
+		h1{text-align: center;}
+	</style>
+</head>
+<body>
+	<header>
+		<h1 id="title"><span class="counter">1</span> Thing Left</h1>
+	</header>
+	<div class="container">
+		<form action="" class="clearfix" autocomplete="off" id="addThing">
+			<input type="text" id="addTodo" autofocus="" placeholder="Add a Thing...">
+			<input type="button" id="addButton" value="Add">
+		</form>
+		<h2>진행</h2>
+		<ul id="toDo" class="todolist">
+		</ul>
+		<h2>완료</h2>
+		<ul id="todoDone" class="donelist">
+		</ul>
+	</div>
+	<script>
+		var todoList = ['taco','hiyo'];
+		var todoStat = [0,1]; // 0 은 완료 1 은 진행
+		var todoContainer = document.getElementById('toDo');
+		var doneContainer = document.getElementById('todoDone');
+		var reButton = document.getElementById('reButton');
+		var title = document.getElementById('title');
+
+		// window load 완료
+		window.addEventListener('load',function(){
+			todoListAll();
+			todoLength();
+			eventAdd();
+		},false);
+
+		// todo 갯수
+		function todoLength(){
+			var firstChild = title.firstChild;
+			firstChild.textContent = todoContainer.childElementCount;
+		}
+
+		// todo 리스트 불러오기
+		function todoListAll(){
+			var newli;
+			var newText;
+			var checkbox;
+			var delBtn;
+			var todoIndex;
+
+			for(var i=0; i < todoList.length; i++) {
+				// li 생성
+				newLi = document.createElement('li');
+
+				// checkbox 생성
+				checkbox = document.createElement('input');
+				checkbox.type = "checkbox";
+				checkbox.checked = false;
+				checkbox.setAttribute('class', 'checkbox');
+
+				// 텍스트 생성
+				newText = document.createTextNode(todoList[i]);
+				newLi.appendChild(newText);
+
+				// 삭제버튼 생성
+				delBtn = document.createElement('input');
+				delBtn.type = "button";
+				delBtn.value = "삭제";
+				delBtn.setAttribute('class', 'delBtn');
+				newLi.appendChild(delBtn);
+
+				// todo index
+				todoIndex = document.createElement('input');
+				todoIndex.type = "hidden";
+				todoIndex.value = i;
+				newLi.appendChild(todoIndex);
+
+				if(todoStat[i] == 1){
+					
+					newLi.insertBefore(checkbox,newText);
+					todoContainer.appendChild(newLi); // 진행 리스트
+				}else{
+					checkbox.checked = true;
+					newLi.insertBefore(checkbox,newText);
+					doneContainer.appendChild(newLi); // 완료 리스트		
+				}
+			}
+		}
+		
+
+		// todo 입력하기
+		var addTodo = document.getElementById('addTodo');
+		var addButton = document.getElementById('addButton');
+
+		function todoAdd(){
+			todoList.push(addTodo.value);
+			todoStat.push(1);
+		}
+
+		addButton.addEventListener('click',function(){
+			todoAdd();
+			reloadList();
+		},false);
+
+		// 멀티 이벤트 추가
+		function eventAdd(){
+			// todoDone
+			var elems = document.querySelectorAll('.checkbox'), i;
+			for (i=0; i<elems.length; i++){
+			  elems[i].addEventListener('click',function(){
+			  	var parentNode = this.parentNode;
+				todoDone(parentNode.lastChild.value);
+			  },false);
+			}
+			// todoDel
+			var elems2 = document.querySelectorAll('.delBtn'), i;
+			for (i=0; i<elems2.length; i++){
+			  elems2[i].addEventListener('click',function(){
+			  	var parentNode = this.parentNode;
+				todoDel(parentNode.lastChild.value);
+			  },false);
+			}
+		}
+		
+		// todo 완료하기
+		function todoDone(todoNum){
+			todoStat[1] = 0;
+			reloadList();
+		}
+
+		// todo 삭제하기
+		function todoDel(todoNum){
+			delete todoList[todoNum];
+			delete todoStat[todoNum];
+			reloadList();
+		}
+
+		function reloadList(){
+			// 기존의 리스트를 삭제
+			while (todoContainer.hasChildNodes()){
+				todoContainer.removeChild(todoContainer.firstChild);
+			}
+			while (doneContainer.hasChildNodes()){
+				doneContainer.removeChild(doneContainer.firstChild);
+			}
+			todoListAll();
+			todoLength();
+			eventAdd();
+		}
+	</script>
+</body>
+</html>

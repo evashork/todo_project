@@ -1,0 +1,16 @@
+{
+	"todo": [
+		{
+			"memo": "taco",
+			"done": false
+		},
+		{
+			"memo": "hiyo",
+			"done": true
+		},
+		{
+			"memo": "momo",
+			"done": true
+		}
+	]
+}

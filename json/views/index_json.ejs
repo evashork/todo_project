@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Todo LIST</title>
+	<style>
+		.container{width:320px; margin:0 auto}
+		.delBtn{float: right;}
+		h1{text-align: center;}
+	</style>
+	<script src="https://code.jquery.com/jquery.js"></script>
+</head>
+<body>
+	<header>
+		<h1 id="title"><span class="counter">1</span> Thing Left</h1>
+	</header>
+	<div class="container">
+		<form action="/new" class="clearfix" autocomplete="off" id="addThing" method="post">
+			<input type="text" id="addTodo" name="todoText" autofocus="" placeholder="Add a Thing...">
+			<input type="submit" id="addButton" value="Add">
+		</form>
+		<h2>진행</h2>
+		<ul id="toDo" class="todolist">
+		</ul>
+		<h2>완료</h2>
+		<ul id="todoDone" class="donelist">
+		</ul>
+		<form action="/delete?_method=delete" method="post" id="delThing">
+			<input type="hidden" name="delTodo" id="delNum" value="">
+		</form>
+		<form action="/edit?_method=put" method="post" id="editThing">
+			<input type="hidden" name="editTodo" id="editNum" value="">
+		</form>
+	</div>
+	<script>
+		var todoData = <%- JSON.stringify(data) %>;
+		var todoJson = JSON.parse(todoData);
+		var todoContainer = document.getElementById('toDo');
+		var doneContainer = document.getElementById('todoDone');
+		var reButton = document.getElementById('reButton');
+		var title = document.getElementById('title');
+
+		// window load 완료
+		window.addEventListener('load',function(){
+			todoListAll();
+			todoLength();
+			eventAdd();
+		},false);
+
+		// todo 갯수
+		function todoLength(){
+			var firstChild = title.firstChild;
+			firstChild.textContent = todoContainer.childElementCount;
+		}
+
+		// todo 리스트 불러오기
+		function todoListAll(){
+			var newli;
+			var newText;
+			var checkbox;
+			var delBtn;
+
+			for(var i=0; i < Object.keys(todoJson.todo).length; i++) {
+
+				newLi = document.createElement('li');
+
+				// checkbox 생성
+				checkbox = document.createElement('input');
+				checkbox.type = "checkbox";
+				checkbox.setAttribute('class', 'checkbox');
+
+				// 텍스트 생성
+				newText = document.createTextNode(todoJson.todo[i].memo);
+				newLi.appendChild(newText);
+
+				// 삭제버튼 생성
+				delBtn = document.createElement('input');
+				delBtn.type = "button";
+				delBtn.value = "삭제";
+				delBtn.setAttribute('class', 'delBtn');
+				newLi.appendChild(delBtn);
+
+				if(!todoJson.todo[i].done){
+					checkbox.checked = false;
+					newLi.insertBefore(checkbox,newText);
+					todoContainer.appendChild(newLi); // 진행 리스트
+				}else{
+					checkbox.checked = true;
+					newLi.insertBefore(checkbox,newText);
+					doneContainer.appendChild(newLi); // 완료 리스트		
+				}
+			}
+		}
+		
+		// 멀티 이벤트 추가
+		function eventAdd(){
+			// todoDone
+			var elems = document.querySelectorAll('.checkbox'), i;
+			for (i=0; i<elems.length; i++){
+			  elems[i].addEventListener('click',function(){
+			  	todoDone(this.nextSibling.nodeValue);
+			  },false);
+			}
+			// todoDel
+			var elems2 = document.querySelectorAll('.delBtn'), i;
+			for (i=0; i<elems2.length; i++){
+			  elems2[i].addEventListener('click',function(){
+				todoDel(this.previousSibling.nodeValue);
+			  },false);
+			}
+		}
+
+		// todo 넘버찾기
+		function findtodoNum(todoMemo){
+			
+			var index = -1;
+
+			for(var i = 0; i < todoJson.todo.length; i++){
+				if(todoJson.todo[i].memo == todoMemo){
+					index = i;
+				}
+			}
+
+			return index;
+		}
+		
+		// todo 완료하기
+		function todoDone(todoMemo){
+			var index = findtodoNum(todoMemo);
+			editPost(index);
+		}
+
+		function editPost(todoNum){
+			document.getElementById('editNum').value = todoNum;
+			document.getElementById('editThing').submit();
+		}
+
+		// todo 삭제하기
+		function todoDel(todoMemo){
+			var index = findtodoNum(todoMemo);
+			delPost(index);
+		}
+
+		function delPost(todoNum){
+			document.getElementById('delNum').value = todoNum;
+			document.getElementById('delThing').submit();
+		}
+
+		function reloadList(){
+			// 기존의 리스트를 삭제
+			while (todoContainer.hasChildNodes()){
+				todoContainer.removeChild(todoContainer.firstChild);
+			}
+			while (doneContainer.hasChildNodes()){
+				doneContainer.removeChild(doneContainer.firstChild);
+			}
+			todoListAll();
+			todoLength();
+			eventAdd();
+		}
+	</script>
+</body>
+</html>
